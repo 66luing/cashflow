@@ -64,7 +64,8 @@
 
   <div>
     聊天室：
-    <input type="number" id="Room-ID" min="1" max="5" value="2" onchange="roomID()">
+    <input type="text" id="Room-ID" name="Room-ID" maxlength="10" size="10" onchange="roomID()">
+	  <label for="Room-Sum"> 人</label>
     玩家人數（1~5）：
     <input type="number" id="player-count" min="1" max="5" value="2" onchange="renderSelectors()">
     玩家名稱：<input type="text" id="playerName" placeholder="輸入名稱">
@@ -85,16 +86,15 @@
   <div id="assets" style="display:none; text-align:left; width: 80%; margin: 10px auto; font-size:14px;"></div>
 
   <hr>
-  <button id="roll-btn" disabled onclick="nextTurn()">下一位玩家擲骰</button>
-  <div id="board"></div>
-  <div id="log-box"><div id="log"></div></div>
+  <button id="next-roll-btn" disabled onclick="nextTurn()">下一位玩家擲骰</button>
 
   <script>
     const socket = io();
     socket.emit('testEvent', { message: '測試訊息' });
 
     socket.on('testResponse', (data) => {
-      console.log('伺服器回應：', data.message);
+      //console.log('伺服器回應：', data.message);
+      log(`伺服器回應 ${data.message} `);
     });
 
     const professions = {
@@ -156,7 +156,7 @@
     function startGame() {
       players = [];
       generateBoard();
-      document.getElementById("roll-btn").disabled = false;
+      document.getElementById("next-roll-btn").disabled = false;
       const count = parseInt(document.getElementById("player-count").value);
 
       for (let i = 0; i < count; i++) {
@@ -232,9 +232,7 @@
       socket.emit("joinGame", data);
     }
 
-    function rollDice() {
-      socket.emit("rollDice");
-    }
+    
 
     function toggleAssets() {
       const panel = document.getElementById("assets");
@@ -285,8 +283,11 @@
       myId = socket.id;
     });
 
+  
+
     function rollDice() {
       return Math.floor(Math.random() * 6) + 1;
+      socket.emit("rollDice");
     }
 
     function nextTurn() {
@@ -310,6 +311,8 @@
     socket.on("updateGame", (state) => {
       players = state.players;
       currentPlayerIndex = state.currentPlayerIndex;
+      log(`${player.name} 加入到遊戲 `); 
+      document.getElementById("Room-Sum").innerHTML = `${currentPlayerIndex}`;
       renderPlayerPositions();
       updateAssetsDisplay();
     });
